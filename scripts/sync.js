@@ -65,7 +65,7 @@ if (process.argv[2] == 'index') {
 function create_lock(cb) {
   if ( database == 'index' ) {
     var fname = './tmp/' + database + '.pid';
-    fs.appendFile(fname, process.pid.toString(), function (err) {
+    fs.appendFile(fname, process.pid, function (err) {
       if (err) {
         console.log("Error: unable to create %s", fname);
         process.exit(1);
@@ -119,7 +119,6 @@ function exit() {
 var dbString = 'mongodb://' + settings.dbsettings.user;
 dbString = dbString + ':' + settings.dbsettings.password;
 dbString = dbString + '@' + settings.dbsettings.address;
-dbString = dbString + ':' + settings.dbsettings.port;
 dbString = dbString + '/' + settings.dbsettings.database;
 
 is_locked(function (exists) {
@@ -147,23 +146,23 @@ is_locked(function (exists) {
                   });
                 }
                 if (mode == 'reindex') {
-                  Tx.deleteMany({}, function(err) { 
+                  Tx.deleteMany({}, function(err) {
                     console.log('TXs cleared.');
-                    Address.deleteMany({}, function(err2) { 
+                    Address.deleteMany({}, function(err2) {
                       console.log('Addresses cleared.');
                       AddressTx.deleteMany({}, function(err3) {
                         console.log('Address TXs cleared.');
                         Richlist.updateOne({coin: settings.coin}, {
                           received: [],
                           balance: [],
-                        }, function(err3) { 
-                          Stats.updateOne({coin: settings.coin}, { 
+                        }, function(err3) {
+                          Stats.updateOne({coin: settings.coin}, {
                             last: 0,
                             count: 0,
                             supply: 0,
                           }, function() {
                             console.log('index cleared (reindex)');
-                          }); 
+                          });
                           db.update_tx_db(settings.coin, 1, stats.count, settings.update_timeout, function(){
                             db.update_richlist('received', function(){
                               db.update_richlist('balance', function(){
@@ -222,7 +221,7 @@ is_locked(function (exists) {
                           });
                         });
                       });
-                    }); 
+                    });
                   });
                 }
               });
