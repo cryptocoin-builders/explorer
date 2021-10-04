@@ -18,7 +18,7 @@ var app = express();
 // bitcoinapi
 bitcoinapi.setWalletDetails(settings.wallet);
 if (settings.heavy != true) {
-  bitcoinapi.setAccess('only', ['getinfo', 'getnetworkhashps', 'getmininginfo', 'getdifficulty', 'getconnectioncount',
+  bitcoinapi.setAccess('only', ['getinfo', 'getnetworkhashps', 'getmininginfo','getdifficulty', 'getconnectioncount',
     'getblockcount', 'getblockhash', 'getblock', 'getrawtransaction', 'getpeerinfo', 'gettxoutsetinfo', 'verifymessage']);
 } else {
   // enable additional heavy api calls
@@ -34,7 +34,7 @@ if (settings.heavy != true) {
     getmaxmoney - Returns the maximum possible money supply.
   */
   bitcoinapi.setAccess('only', ['getinfo', 'getstakinginfo', 'getnetworkhashps', 'getdifficulty', 'getconnectioncount',
-    'getblockcount', 'getblockhash', 'getblock', 'getrawtransaction', 'getmaxmoney', 'getvote',
+    'getblockcount', 'getblockhash', 'getblock', 'getrawtransaction','getmaxmoney', 'getvote',
     'getmaxvote', 'getphase', 'getreward', 'getnextrewardestimate', 'getnextrewardwhenstr',
     'getnextrewardwhensec', 'getsupply', 'gettxoutsetinfo', 'verifymessage']);
 }
@@ -60,45 +60,17 @@ app.use('/ext/getmoneysupply', function(req,res){
 
 app.use('/ext/getaddress/:hash', function(req,res){
   db.get_address(req.params.hash, function(address){
-    db.get_address_txs_ajax(req.params.hash, 0, settings.txcount, function(txs, count){
-      if (address) {
-        var last_txs = [];
-        for(i=0; i<txs.length; i++){
-          if(typeof txs[i].txid !== "undefined") {
-            var out = 0,
-            vin = 0,
-            tx_type = 'vout',
-            row = {};
-            txs[i].vout.forEach(function (r) {
-              if (r.addresses == req.params.hash) {
-                out += r.amount;
-              }
-            });
-            txs[i].vin.forEach(function (s) {
-              if (s.addresses == req.params.hash) {
-                vin += s.amount;
-              }
-            });
-            if (vin > out) {
-              tx_type = 'vin';
-            }
-            row['addresses'] = txs[i].txid;
-            row['type'] = tx_type;
-            last_txs.push(row);
-          }
-        }
-        var a_ext = {
-          address: address.a_id,
-          sent: (address.sent / 100000000),
-          received: (address.received / 100000000),
-          balance: (address.balance / 100000000).toString().replace(/(^-+)/mg, ''),
-          last_txs: last_txs,
-        };
-        res.send(a_ext);
-      } else {
-        res.send({ error: 'address not found.', hash: req.params.hash})
-      }
-    });
+    if (address) {
+      var a_ext = {
+        address: address.a_id,
+        sent: (address.sent / 100000000),
+        received: (address.received / 100000000),
+        balance: (address.balance / 100000000).toString().replace(/(^-+)/mg, ''),
+      };
+      res.send(a_ext);
+    } else {
+      res.send({ error: 'address not found.', hash: req.params.hash})
+    }
   });
 });
 
@@ -291,7 +263,6 @@ app.set('nethash', settings.nethash);
 app.set('nethash_units', settings.nethash_units);
 app.set('show_sent_received', settings.show_sent_received);
 app.set('logo', settings.logo);
-app.set('headerlogo', settings.headerlogo);
 app.set('theme', settings.theme);
 app.set('labels', settings.labels);
 
