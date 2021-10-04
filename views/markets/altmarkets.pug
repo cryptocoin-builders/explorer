@@ -1,61 +1,13 @@
 extends menu
  
 block market_view
-  script.
-    $(document).ready(function(){
-      $('#summary-panel').hide();
-      var ohlc = #{marketdata.data.chartdata};
-      var plot2 = $.jqplot('chart',[ohlc],{
-        seriesDefaults:{yaxis:'y2axis'},
-        axes: {
-          xaxis: {
-            renderer:$.jqplot.DateAxisRenderer,
-            tickOptions:{formatString:'%R'},
-            tickInterval: "2 hours",
-            
-          },
-          y2axis: {
-            tickOptions:{formatString:'%.8f'},
-          }
-        },
-        // To make a candle stick chart, set the "candleStick" option to true.
-        series: [
-          {
-            renderer:$.jqplot.OHLCRenderer,
-            rendererOptions:{ candleStick:true }
-          }
-        ],
-        highlighter: {
-          show: true,
-          showMarker:false,
-          tooltipAxes: 'xy',
-          yvalues: 4,
-          formatString:'<table class="jqplot-highlighter"> \
-          <tr><td>time:</td><td>%s</td></tr> \
-          <tr><td>open:</td><td>%s</td></tr> \
-          <tr><td>hi:</td><td>%s</td></tr> \
-          <tr><td>low:</td><td>%s</td></tr> \
-          <tr><td>close:</td><td>%s</td></tr></table>'
-        }
-      }); 
-      $(window).resize(function () { 
-        plot2.replot( { resetAxes: false } );
-      });
-    });
   .row
-    .col-md-12
-      #chart-panel.panel.panel-default
+    .col-md-12  
+      .panel.panel-default
         .panel-heading
           strong #{settings.locale.altmarkets} - #{marketdata.coin}/#{marketdata.exchange} - #{settings.locale.mkt_hours}
           a(href='#')
-            span.fa.fa-th-list.pull-right.view-summary.iquidus.market-toggle(data-toggle='tooltip', data-placement='bottom', title=settings.locale.mkt_view_chart) 
-        .panel-body
-          div#chart(style="width:100%;height:300px;")
-      #summary-panel.panel.panel-default
-        .panel-heading
-          h5 #{settings.locale.altmarkets} - #{marketdata.coin}/#{marketdata.exchange} - #{settings.locale.mkt_hours}
-          a(href='#')
-            span.fa.fa-line-chart.pull-right.view-chart.iquidus.market-toggle(data-toggle='tooltip', data-placement='bottom', title=settings.locale.mkt_view_summary) 
+            span.fa.fa-line-chart.pull-right.view-chart-disabled.iquidus.market-toggle(data-toggle='tooltip', data-placement='bottom', title=settings.locale.mkt_no_chart) 
         table.table.table-bordered.summary-table 
           thead
             tr
@@ -63,6 +15,8 @@ block market_view
               th #{settings.locale.mkt_low}
               th #{settings.locale.mkt_volume} (#{marketdata.coin})
               th #{settings.locale.mkt_volume} (#{marketdata.exchange})
+              th.hidden-xs #{settings.locale.mkt_top_bid}
+              th.hidden-xs #{settings.locale.mkt_top_ask}
               th.hidden-xs #{settings.locale.mkt_last}
               th #{settings.locale.mkt_change}
           tbody
@@ -71,17 +25,19 @@ block market_view
               td #{marketdata.data.summary.low}
               td #{marketdata.data.summary.volume}
               td #{marketdata.data.summary.volume_btc}
+              td.hidden-xs #{marketdata.data.summary.bid}
+              td.hidden-xs #{marketdata.data.summary.ask}
               td.hidden-xs #{marketdata.data.summary.last}
               - var altmarkets_change = (marketdata.data.summary.change);
               if altmarkets_change >= 0
-                td.table-success +#{altmarkets_change} %
+                td.success +#{altmarkets_change} %
               else
-                td.table-danger #{altmarkets_change} %
+                td.danger #{altmarkets_change} %
   .row
     .col-md-6.col-xs-12
       .panel.panel-default
         .panel-heading
-          h5.panel-title #{settings.locale.mkt_buy_orders}
+          h3.panel-title #{settings.locale.mkt_buy_orders}
         table.table.table-striped.table-bordered.order-table
           thead
             tr
@@ -90,7 +46,7 @@ block market_view
               th.hidden-xs #{settings.locale.mkt_total} (#{marketdata.exchange})
           tbody
             each buy in marketdata.data.buys
-              tr.table-success
+              tr
                 td
                   =buy.price
                 td
@@ -101,7 +57,7 @@ block market_view
     .col-md-6.col-xs-12
       .panel.panel-default
         .panel-heading
-          h5.panel-title #{settings.locale.mkt_sell_orders}
+          h3.panel-title #{settings.locale.mkt_sell_orders}
         table.table.table-striped.table-bordered.order-table
           thead
             tr
@@ -110,7 +66,7 @@ block market_view
               th.hidden-xs #{settings.locale.mkt_total} (#{marketdata.exchange})
           tbody
             each sell in marketdata.data.sells
-              tr.table-danger
+              tr
                 td
                   =sell.price
                 td
@@ -121,7 +77,7 @@ block market_view
     .col-md-12
       .panel.panel-default
         .panel-heading
-          h5.panel-title #{settings.locale.mkt_trade_history}
+          h3.panel-title #{settings.locale.mkt_trade_history}
         table.table.table-hover.history-table.table-bordered(cellspacing="0")
           thead
             tr
@@ -132,30 +88,30 @@ block market_view
               th.hidden-xs #{settings.locale.mkt_time_stamp}
           tbody
             each order in marketdata.data.history
-              if order.taker_type == 'buy'
-                tr.table-success
+              if order.side == 'up'
+                tr.success
                   td.hidden-xs
-                    =order.taker_type
+                    =order.side
                   td
-                    =parseFloat(order.amount).toFixed(8)
+                    =parseFloat(order.volume).toFixed(8)
                   td
                     =parseFloat(order.price).toFixed(8)
                   td
-                    =parseFloat(order.total).toFixed(8)
+                    =parseFloat(order.funds).toFixed(8)
                   td.hidden-xs
-                    =(new Date(order.created_at * 1000).toUTCString())
+                    =(new Date(order.timestamp * 1000).toUTCString())
               else
-                tr.table-danger 
+                tr.danger 
                   td.hidden-xs
-                    =order.taker_type
+                    =order.side
                   td
-                    =parseFloat(order.amount).toFixed(8)
+                    =parseFloat(order.volume).toFixed(8)
                   td
                     =parseFloat(order.price).toFixed(8)
                   td
-                    =parseFloat(order.total).toFixed(8)
+                    =parseFloat(order.funds).toFixed(8)
                   td.hidden-xs
-                    =(new Date(order.created_at * 1000).toUTCString())
+                    =(new Date(order.timestamp * 1000).toUTCString())
 
       .footer-padding
 

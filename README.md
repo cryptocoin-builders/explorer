@@ -1,11 +1,18 @@
-Iquidus Explorer - 1.7.4
+Iquidus Explorer - 1.7.3
 ================
 
 An open source block explorer written in node.js.
 
 ### See it in action
 
-*  [List of live explorers running Iquidus](https://github.com/iquidus/explorer/wiki/Live-Explorers)
+*  [Deutsche eMark](http://b.emark.tk/)
+*  [Vertcoin](http://explorer.vertcoin.info/)
+*  [TheHolyRogerCoin (ROGER) Explorer](https://explorer.theholyroger.com/)
+*  [CPUChain (CPU) Explorer](https://explorer.cpuchain.org/)
+*  [Omega Blockchain Explorer](http://explorer.omegablockchain.net/)
+*  [Sugarchain Explorer](https://1explorer.sugarchain.org/)
+*  [Florincoin](https://florincoin.info/info)
+*  [Maxcoin Explorer 1](https://explorer.maxcoinproject.net/)
 
 
 *Note: If you would like your instance mentioned here contact me*
